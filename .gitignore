@@ -1,0 +1,58 @@
+# Security and Secrets
+.env
+.env.*
+*.pem
+*.key
+*.keystore
+*.pkcs12
+*.p12
+*.pfx
+*.jks
+application-secret.yml
+application-secret.properties
+secrets/
+credentials/
+aws-credentials
+.aws/
+.gcp/
+.azure/
+*rsa*
+id_rsa*
+*.pub
+
+# Build output
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# IDEs
+.idea/
+*.iml
+*.iws
+.eclipse/
+.metadata/
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
