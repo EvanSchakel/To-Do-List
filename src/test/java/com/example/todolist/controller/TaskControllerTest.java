@@ -46,6 +46,17 @@ public class TaskControllerTest {
     }
 
     @Test
+    void testCreateTaskWithEmptyTitle_ReturnsBadRequest() throws Exception {
+        Task task = new Task("", "Test Description");
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(task)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Title is required"));
+    }
+
+    @Test
     void testGetAllTasks() throws Exception {
         Task task1 = new Task("Task 1", "Desc 1");
         Task task2 = new Task("Task 2", "Desc 2");
@@ -83,6 +94,20 @@ public class TaskControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Updated Title"))
                 .andExpect(jsonPath("$.completed").value(true));
+    }
+
+    @Test
+    void testUpdateTaskWithEmptyTitle_ReturnsBadRequest() throws Exception {
+        Task task = new Task("Original Title", "Original Desc");
+        task = taskRepository.save(task);
+
+        task.setTitle("");
+
+        mockMvc.perform(put("/api/tasks/" + task.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(task)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Title is required"));
     }
 
     @Test
