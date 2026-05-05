@@ -1,5 +1,6 @@
 package com.example.todolist.controller;
 
+import com.example.todolist.dto.TaskRequest;
 import com.example.todolist.model.Task;
 import com.example.todolist.repository.TaskRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,15 +35,26 @@ public class TaskControllerTest {
 
     @Test
     void testCreateTask() throws Exception {
-        Task task = new Task("Test Task", "Test Description");
+        TaskRequest request = new TaskRequest("Test Task", "Test Description", false);
 
         mockMvc.perform(post("/api/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(task)))
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Test Task"))
                 .andExpect(jsonPath("$.description").value("Test Description"))
                 .andExpect(jsonPath("$.completed").value(false));
+    }
+
+    @Test
+    void testCreateTaskValidationFailure() throws Exception {
+        TaskRequest request = new TaskRequest("", "Test Description", false);
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.title").value("Title is mandatory"));
     }
 
     @Test
@@ -70,16 +82,22 @@ public class TaskControllerTest {
     }
 
     @Test
+    void testGetTaskByIdNotFound() throws Exception {
+        mockMvc.perform(get("/api/tasks/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"));
+    }
+
+    @Test
     void testUpdateTask() throws Exception {
         Task task = new Task("Original Title", "Original Desc");
         task = taskRepository.save(task);
 
-        task.setTitle("Updated Title");
-        task.setCompleted(true);
+        TaskRequest request = new TaskRequest("Updated Title", "Original Desc", true);
 
         mockMvc.perform(put("/api/tasks/" + task.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(task)))
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Updated Title"))
                 .andExpect(jsonPath("$.completed").value(true));
@@ -91,7 +109,7 @@ public class TaskControllerTest {
         task = taskRepository.save(task);
 
         mockMvc.perform(delete("/api/tasks/" + task.getId()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/tasks/" + task.getId()))
                 .andExpect(status().isNotFound());

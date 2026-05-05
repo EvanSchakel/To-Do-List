@@ -1,12 +1,15 @@
 package com.example.todolist.service;
 
+import com.example.todolist.dto.TaskRequest;
+import com.example.todolist.dto.TaskResponse;
+import com.example.todolist.exception.TaskNotFoundException;
 import com.example.todolist.model.Task;
 import com.example.todolist.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -18,31 +21,51 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<TaskResponse> getAllTasks() {
+        return taskRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
-    public Optional<Task> getTaskById(Long id) {
-        return taskRepository.findById(id);
+    public TaskResponse getTaskById(Long id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException(id));
+        return mapToResponse(task);
     }
 
-    public Task createTask(Task task) {
-        return taskRepository.save(task);
+    public TaskResponse createTask(TaskRequest taskRequest) {
+        Task task = new Task(taskRequest.title(), taskRequest.description());
+        task.setCompleted(taskRequest.completed());
+        Task savedTask = taskRepository.save(task);
+        return mapToResponse(savedTask);
     }
 
-    public Task updateTask(Long id, Task taskDetails) {
-        return taskRepository.findById(id).map(task -> {
-            task.setTitle(taskDetails.getTitle());
-            task.setDescription(taskDetails.getDescription());
-            task.setCompleted(taskDetails.isCompleted());
-            return taskRepository.save(task);
-        }).orElseGet(() -> {
-            taskDetails.setId(id);
-            return taskRepository.save(taskDetails);
-        });
+    public TaskResponse updateTask(Long id, TaskRequest taskRequest) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException(id));
+
+        task.setTitle(taskRequest.title());
+        task.setDescription(taskRequest.description());
+        task.setCompleted(taskRequest.completed());
+
+        Task updatedTask = taskRepository.save(task);
+        return mapToResponse(updatedTask);
     }
 
     public void deleteTask(Long id) {
+        if (!taskRepository.existsById(id)) {
+            throw new TaskNotFoundException(id);
+        }
         taskRepository.deleteById(id);
+    }
+
+    private TaskResponse mapToResponse(Task task) {
+        return new TaskResponse(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.isCompleted(),
+                task.getCreatedAt()
+        );
     }
 }
