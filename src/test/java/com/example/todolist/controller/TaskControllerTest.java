@@ -91,9 +91,29 @@ public class TaskControllerTest {
         task = taskRepository.save(task);
 
         mockMvc.perform(delete("/api/tasks/" + task.getId()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/tasks/" + task.getId()))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetTaskByIdNotFound() throws Exception {
+        mockMvc.perform(get("/api/tasks/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Task not found with id: 999"));
+    }
+
+    @Test
+    void testCreateTaskValidationFailed() throws Exception {
+        Task task = new Task("", "Test Description"); // Invalid: empty title
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(task)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.validationErrors.title").value("Title is mandatory"));
     }
 }

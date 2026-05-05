@@ -1,22 +1,33 @@
 package com.example.todolist.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDateTime;
 
 @Entity
+@Schema(description = "Represents a task in the to-do list")
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "The unique identifier of the task", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @Column(nullable = false)
+    @NotBlank(message = "Title is mandatory")
+    @Size(max = 100, message = "Title must not exceed 100 characters")
+    @Schema(description = "The title of the task", example = "Buy groceries")
     private String title;
 
+    @Size(max = 500, message = "Description must not exceed 500 characters")
+    @Schema(description = "Detailed description of the task", example = "Milk, Bread, Eggs")
     private String description;
 
     @Column(nullable = false)
