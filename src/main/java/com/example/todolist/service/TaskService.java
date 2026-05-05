@@ -30,15 +30,12 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public Task updateTask(Long id, Task taskDetails) {
+    public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
             task.setDescription(taskDetails.getDescription());
             task.setCompleted(taskDetails.isCompleted());
             return taskRepository.save(task);
-        }).orElseGet(() -> {
-            taskDetails.setId(id);
-            return taskRepository.save(taskDetails);
         });
     }
 
