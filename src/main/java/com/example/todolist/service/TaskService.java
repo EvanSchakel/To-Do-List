@@ -4,6 +4,7 @@ import com.example.todolist.model.Task;
 import com.example.todolist.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +40,11 @@ public class TaskService {
         });
     }
 
-    public void deleteTask(Long id) {
-        taskRepository.deleteById(id);
+    @Transactional
+    public boolean deleteTask(Long id) {
+        // Bolt Optimization: Use direct DELETE query to avoid unnecessary SELECT
+        // queries triggered by the default deleteById and findById methods.
+        // Returns true if a row was actually deleted.
+        return taskRepository.deleteTaskById(id) > 0;
     }
 }
