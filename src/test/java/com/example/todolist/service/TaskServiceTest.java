@@ -83,8 +83,17 @@ public class TaskServiceTest {
 
     @Test
     void testDeleteTask() {
-        doNothing().when(taskRepository).deleteById(1L);
-        taskService.deleteTask(1L);
-        verify(taskRepository, times(1)).deleteById(1L);
+        when(taskRepository.deleteTaskById(1L)).thenReturn(1);
+        boolean result = taskService.deleteById(1L);
+        assertTrue(result);
+        verify(taskRepository, times(1)).deleteTaskById(1L);
+    }
+
+    @Test
+    void testDeleteTaskNotFound() {
+        when(taskRepository.deleteTaskById(2L)).thenReturn(0);
+        boolean result = taskService.deleteById(2L);
+        assertFalse(result);
+        verify(taskRepository, times(1)).deleteTaskById(2L);
     }
 }
