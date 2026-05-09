@@ -19,18 +19,24 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
 
+    @Transactional
     public Task createTask(Task task) {
         return taskRepository.save(task);
     }
 
+    // Bolt: Adding @Transactional prevents the entity from becoming detached after findById.
+    // This avoids a redundant SELECT query before the UPDATE when saving the modified entity.
+    @Transactional
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
