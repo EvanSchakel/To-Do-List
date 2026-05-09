@@ -57,6 +57,30 @@ public class TaskControllerTest {
     }
 
     @Test
+    void testCreateTaskWithTooLongTitle_ReturnsBadRequest() throws Exception {
+        String longTitle = "a".repeat(256);
+        Task task = new Task(longTitle, "Test Description");
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(task)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Title must be less than 255 characters"));
+    }
+
+    @Test
+    void testCreateTaskWithTooLongDescription_ReturnsBadRequest() throws Exception {
+        String longDescription = "a".repeat(1001);
+        Task task = new Task("Test Task", longDescription);
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(task)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.description").value("Description must be less than 1000 characters"));
+    }
+
+    @Test
     void testGetAllTasks() throws Exception {
         Task task1 = new Task("Task 1", "Desc 1");
         Task task2 = new Task("Task 2", "Desc 2");
