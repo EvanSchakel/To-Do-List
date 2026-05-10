@@ -19,10 +19,18 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
+    // ⚡ Bolt Performance Optimization:
+    // Added @Transactional(readOnly = true) to disable Hibernate's dirty checking mechanism.
+    // Impact: Improves read performance by avoiding unnecessary snapshot creation and memory overhead during read operations.
+    @Transactional(readOnly = true)
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
+    // ⚡ Bolt Performance Optimization:
+    // Added @Transactional(readOnly = true) to disable Hibernate's dirty checking mechanism.
+    // Impact: Improves read performance by avoiding unnecessary snapshot creation and memory overhead during read operations.
+    @Transactional(readOnly = true)
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
@@ -31,6 +39,10 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
+    // ⚡ Bolt Performance Optimization:
+    // Added @Transactional to keep the entity managed in the persistence context during the update operation.
+    // Impact: Eliminates a redundant SELECT query before the UPDATE execution by avoiding entity detachment.
+    @Transactional
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
