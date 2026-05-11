@@ -28,6 +28,7 @@ public class TaskService {
     }
 
     public Task createTask(Task task) {
+        task.setId(null); // Prevent mass assignment IDOR
         return taskRepository.save(task);
     }
 
