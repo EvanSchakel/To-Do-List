@@ -46,6 +46,20 @@ public class TaskControllerTest {
     }
 
     @Test
+    void testCreateTaskWithId_IgnoresIdAndCreatesNew() throws Exception {
+        Task existing = taskRepository.save(new Task("Existing", "Existing desc"));
+
+        Task maliciousTask = new Task("Hacked", "Hacked desc");
+        maliciousTask.setId(existing.getId());
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(maliciousTask)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(org.hamcrest.Matchers.not(existing.getId().intValue())));
+    }
+
+    @Test
     void testCreateTaskWithEmptyTitle_ReturnsBadRequest() throws Exception {
         Task task = new Task("", "Test Description");
 
