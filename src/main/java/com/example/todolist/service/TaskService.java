@@ -19,10 +19,14 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
+    // ⚡ Bolt: Added @Transactional(readOnly = true) to disable Hibernate dirty checking for better read performance
+    @Transactional(readOnly = true)
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
+    // ⚡ Bolt: Added @Transactional(readOnly = true) to disable Hibernate dirty checking for better read performance
+    @Transactional(readOnly = true)
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
@@ -31,6 +35,8 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
+    // ⚡ Bolt: Added @Transactional to prevent entity detachment and avoid a redundant SELECT before UPDATE
+    @Transactional
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
