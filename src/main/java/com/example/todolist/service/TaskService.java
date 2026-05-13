@@ -19,10 +19,14 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
+    // ⚡ Bolt Optimization: Disable Hibernate dirty checking for read-only operations to improve performance
+    @Transactional(readOnly = true)
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
+    // ⚡ Bolt Optimization: Disable Hibernate dirty checking for read-only operations to improve performance
+    @Transactional(readOnly = true)
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
@@ -31,6 +35,8 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
+    // ⚡ Bolt Optimization: Keep entity managed during fetch-modify-save to prevent redundant database queries
+    @Transactional
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
