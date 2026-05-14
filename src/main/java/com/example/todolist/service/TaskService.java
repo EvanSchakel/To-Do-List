@@ -28,6 +28,7 @@ public class TaskService {
     }
 
     public Task createTask(Task task) {
+        task.setId(null); // Prevent Mass Assignment/IDOR by ensuring it's a new entity
         return taskRepository.save(task);
     }
 

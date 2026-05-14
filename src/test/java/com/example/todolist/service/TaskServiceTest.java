@@ -59,6 +59,21 @@ public class TaskServiceTest {
     }
 
     @Test
+    void testCreateTaskIgnoresProvidedId() {
+        Task inputTask = new Task("Hacked Task", "Description");
+        inputTask.setId(999L);
+
+        when(taskRepository.save(any(Task.class))).thenAnswer(i -> {
+            Task savedTask = (Task) i.getArguments()[0];
+            assertNull(savedTask.getId(), "The ID should be null before saving");
+            return savedTask;
+        });
+
+        taskService.createTask(inputTask);
+        verify(taskRepository, times(1)).save(inputTask);
+    }
+
+    @Test
     void testUpdateTask() {
         Task updateDetails = new Task("Updated Task", "Updated Description");
         updateDetails.setCompleted(true);
