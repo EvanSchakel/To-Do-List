@@ -1,3 +1,6 @@
 ## 2024-05-07 - Avoid SELECT before DELETE in Spring Data JPA
 **Learning:** By default, Spring Data JPA's `deleteById` and manual "check existence then delete" workflows cause an unnecessary SELECT query before the actual DELETE query. In a high-throughput system, this N+1 like behavior is a performance bottleneck.
 **Action:** Use a custom `@Modifying` JPQL `@Query("DELETE FROM Entity e WHERE e.id = :id")` that returns the number of affected rows to achieve a deletion in a single database roundtrip, as long as JPA lifecycle callbacks (`@PreRemove`) or entity-level cascades are not required.
+## 2024-05-13 - Avoid extra SELECT before UPDATE with `@Transactional`
+**Learning:** In Spring Data JPA, performing a fetch (`findById`) and then an update (`save`) within the same method without an enclosing `@Transactional` boundary causes the entity to become detached between calls. This forces Hibernate to issue an additional `SELECT` query during the `save` (merge) operation to re-attach the entity before performing the `UPDATE`.
+**Action:** Always wrap fetch-modify-save operations in service layer methods with `@Transactional` to keep the entity managed in the persistence context, eliminating the redundant `SELECT` query.

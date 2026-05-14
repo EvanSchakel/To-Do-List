@@ -19,10 +19,14 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
+    // Optimization: Disables Hibernate's dirty checking and prevents flush overhead for faster read performance
+    @Transactional(readOnly = true)
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
+    // Optimization: Disables Hibernate's dirty checking and prevents flush overhead for faster read performance
+    @Transactional(readOnly = true)
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
@@ -31,6 +35,9 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
+    // Optimization: Wraps fetch and save in a single transaction. This prevents the entity from
+    // becoming detached, avoiding an unnecessary extra SELECT query before the final UPDATE execution.
+    @Transactional
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
