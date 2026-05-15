@@ -28,6 +28,9 @@ public class TaskService {
     }
 
     public Task createTask(Task task) {
+        // Explicitly set ID to null to prevent Mass Assignment/IDOR vulnerabilities
+        // where a malicious user provides an existing ID to overwrite an entity.
+        task.setId(null);
         return taskRepository.save(task);
     }
 

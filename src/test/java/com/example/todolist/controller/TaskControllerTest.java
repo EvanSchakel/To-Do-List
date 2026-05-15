@@ -46,6 +46,27 @@ public class TaskControllerTest {
     }
 
     @Test
+    void testCreateTaskWithExistingId_IgnoresIdAndCreatesNew() throws Exception {
+        Task existingTask = new Task("Existing Task", "Existing Description");
+        existingTask = taskRepository.save(existingTask);
+        Long existingId = existingTask.getId();
+
+        Task newTaskPayload = new Task("New Task", "New Description");
+        newTaskPayload.setId(existingId); // Attempt mass assignment
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newTaskPayload)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(org.hamcrest.Matchers.not(existingId)))
+                .andExpect(jsonPath("$.title").value("New Task"));
+
+        // Verify existing task wasn't overwritten
+        Task stillExisting = taskRepository.findById(existingId).orElseThrow();
+        org.junit.jupiter.api.Assertions.assertEquals("Existing Task", stillExisting.getTitle());
+    }
+
+    @Test
     void testCreateTaskWithEmptyTitle_ReturnsBadRequest() throws Exception {
         Task task = new Task("", "Test Description");
 
