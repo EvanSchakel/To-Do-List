@@ -59,6 +59,18 @@ public class TaskServiceTest {
     }
 
     @Test
+    void testCreateTaskPreventsMassAssignment() {
+        Task inputTask = new Task("Malicious Task", "Hacked");
+        inputTask.setId(999L); // Malicious user tries to overwrite existing task
+
+        when(taskRepository.save(any(Task.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Task createdTask = taskService.createTask(inputTask);
+        assertNull(createdTask.getId());
+        assertEquals("Malicious Task", createdTask.getTitle());
+    }
+
+    @Test
     void testUpdateTask() {
         Task updateDetails = new Task("Updated Task", "Updated Description");
         updateDetails.setCompleted(true);

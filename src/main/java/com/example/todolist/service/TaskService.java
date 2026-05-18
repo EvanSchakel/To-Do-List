@@ -28,6 +28,9 @@ public class TaskService {
     }
 
     public Task createTask(Task task) {
+        // Prevent Mass Assignment/IDOR: explicitly nullify the ID to ensure
+        // Spring Data JPA performs an insert, not an update of an existing record.
+        task.setId(null);
         return taskRepository.save(task);
     }
 
