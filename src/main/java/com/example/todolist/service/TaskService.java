@@ -28,6 +28,8 @@ public class TaskService {
     }
 
     public Task createTask(Task task) {
+        // Prevent Mass Assignment/IDOR vulnerabilities by ensuring a new entity is created
+        task.setId(null);
         return taskRepository.save(task);
     }
 

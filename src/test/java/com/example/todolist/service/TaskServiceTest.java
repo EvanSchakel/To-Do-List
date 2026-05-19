@@ -52,10 +52,20 @@ public class TaskServiceTest {
 
     @Test
     void testCreateTask() {
-        when(taskRepository.save(any(Task.class))).thenReturn(task);
-        Task createdTask = taskService.createTask(new Task("Test Task", "Description"));
+        Task inputTask = new Task("Test Task", "Description");
+        inputTask.setId(999L); // Simulate mass assignment attempt
+
+        when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> {
+            Task savedTask = invocation.getArgument(0);
+            assertNull(savedTask.getId(), "Task ID should be nullified before saving to prevent mass assignment");
+            savedTask.setId(1L); // Simulate DB generating an ID
+            return savedTask;
+        });
+
+        Task createdTask = taskService.createTask(inputTask);
         assertNotNull(createdTask);
         assertEquals("Test Task", createdTask.getTitle());
+        assertEquals(1L, createdTask.getId());
     }
 
     @Test

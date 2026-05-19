@@ -57,6 +57,30 @@ public class TaskControllerTest {
     }
 
     @Test
+    void testCreateTaskWithId_IgnoresIdAndCreatesNew() throws Exception {
+        // First, create an existing task
+        Task existingTask = new Task("Existing Task", "Existing Description");
+        existingTask = taskRepository.save(existingTask);
+        Long existingId = existingTask.getId();
+
+        // Attempt to create a new task with the ID of the existing task
+        Task newTaskWithId = new Task("New Task", "New Description");
+        newTaskWithId.setId(existingId);
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newTaskWithId)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(org.hamcrest.Matchers.not(existingId)))
+                .andExpect(jsonPath("$.title").value("New Task"));
+
+        // Verify the existing task was not overwritten
+        mockMvc.perform(get("/api/tasks/" + existingId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Existing Task"));
+    }
+
+    @Test
     void testGetAllTasks() throws Exception {
         Task task1 = new Task("Task 1", "Desc 1");
         Task task2 = new Task("Task 2", "Desc 2");
