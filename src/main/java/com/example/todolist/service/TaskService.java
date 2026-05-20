@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true) // ⚡ Bolt: Disable dirty checking for read operations to improve performance
 public class TaskService {
 
     private final TaskRepository taskRepository;
@@ -27,10 +28,12 @@ public class TaskService {
         return taskRepository.findById(id);
     }
 
+    @Transactional // ⚡ Bolt: Override read-only for write operation
     public Task createTask(Task task) {
         return taskRepository.save(task);
     }
 
+    @Transactional // ⚡ Bolt: Prevent detached entity between find and save, avoiding redundant SELECT
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
