@@ -59,6 +59,19 @@ public class TaskServiceTest {
     }
 
     @Test
+    void testCreateTaskPreventsMassAssignment() {
+        Task inputTask = new Task("Hacked Task", "Hacked Description");
+        inputTask.setId(999L);
+
+        when(taskRepository.save(any(Task.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Task createdTask = taskService.createTask(inputTask);
+        assertNotNull(createdTask);
+        assertNull(createdTask.getId(), "ID should be nullified to prevent Mass Assignment");
+        assertEquals("Hacked Task", createdTask.getTitle());
+    }
+
+    @Test
     void testUpdateTask() {
         Task updateDetails = new Task("Updated Task", "Updated Description");
         updateDetails.setCompleted(true);
