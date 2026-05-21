@@ -31,12 +31,14 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
+    // ⚡ Bolt: Keep entity attached during fetch-modify-save, relying on automatic dirty checking
+    @Transactional
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
             task.setDescription(taskDetails.getDescription());
             task.setCompleted(taskDetails.isCompleted());
-            return taskRepository.save(task);
+            return task;
         });
     }
 
