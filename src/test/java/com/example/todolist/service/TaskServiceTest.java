@@ -64,7 +64,6 @@ public class TaskServiceTest {
         updateDetails.setCompleted(true);
 
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
-        when(taskRepository.save(any(Task.class))).thenAnswer(i -> i.getArguments()[0]);
 
         Optional<Task> updatedTask = taskService.updateTask(1L, updateDetails);
 
