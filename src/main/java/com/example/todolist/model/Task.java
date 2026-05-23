@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,9 +17,11 @@ public class Task {
     private Long id;
 
     @NotBlank(message = "Title is required")
+    @Size(max = 255, message = "Title cannot exceed 255 characters")
     @Column(nullable = false)
     private String title;
 
+    @Size(max = 1000, message = "Description cannot exceed 1000 characters")
     private String description;
 
     @Column(nullable = false)
