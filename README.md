@@ -5,7 +5,7 @@
 ![H2 Database](https://img.shields.io/badge/Database-H2-blue)
 ![Maven](https://img.shields.io/badge/Build-Maven-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![CI/CD](https://github.com/example/todolist/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/EvanSchakel/To-Do-List/actions/workflows/ci.yml/badge.svg)](https://github.com/EvanSchakel/To-Do-List/actions/workflows/ci.yml)
 
 A clean, robust, and professional To-Do List REST API built with Java and Spring Boot. It provides a simple yet comprehensive foundation for task management applications, demonstrating best practices in API design, data validation, and architecture.
 
@@ -16,6 +16,7 @@ A clean, robust, and professional To-Do List REST API built with Java and Spring
 - **In-Memory Database**: Uses an H2 database for quick setup and testing, seeded with initial demo data.
 - **Swagger Documentation**: Integrated OpenAPI documentation (Swagger UI) for easy API exploration and testing.
 - **Error Handling**: Centralized global exception handling to provide consistent JSON error responses.
+- **Security Headers**: `X-Content-Type-Options`, `X-Frame-Options`, and `Strict-Transport-Security` on all responses.
 
 ## 🏗️ Architecture
 
@@ -88,3 +89,7 @@ curl -X PUT http://localhost:8080/api/tasks/1 \
 ```bash
 curl -X DELETE http://localhost:8080/api/tasks/1
 ```
+
+## 📄 License
+
+[MIT](./LICENSE) © 2026 Evan Schakel
