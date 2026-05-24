@@ -14,3 +14,7 @@
 ## 2024-05-23 - Disable Open Session In View (OSIV)
 **Learning:** By default, Spring Boot sets `spring.jpa.open-in-view=true`. This anti-pattern keeps the database connection (Hibernate Session) open during the entire view rendering and JSON serialization phase in the controller layer. Under high load or slow network conditions, this easily leads to database connection pool exhaustion as connections are held significantly longer than necessary.
 **Action:** Always set `spring.jpa.open-in-view=false` in `application.properties` for REST APIs. Ensure all required entity associations are properly initialized within the `@Transactional` service layer before returning data to the controller.
+
+## 2026-05-24 - Enable HTTP Response Compression
+**Learning:** For Spring Boot REST APIs returning potentially large JSON arrays (like a growing list of tasks), network bandwidth and client-side processing can become a bottleneck. Spring Boot provides out-of-the-box support for HTTP response compression.
+**Action:** When a service returns large payloads, enable `server.compression.enabled=true` in `application.properties` with appropriate MIME types and a minimum response size threshold (e.g., 1024 bytes) to optimize network transfer times.
