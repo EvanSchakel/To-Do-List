@@ -22,6 +22,7 @@ public class SecurityHeadersFilter implements Filter {
             httpResponse.setHeader("X-Frame-Options", "SAMEORIGIN"); // SAMEORIGIN allows H2 console to work
             httpResponse.setHeader("X-XSS-Protection", "1; mode=block");
             httpResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+            httpResponse.setHeader("Content-Security-Policy", "default-src 'self'");
         }
         chain.doFilter(request, response);
     }
