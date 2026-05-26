@@ -18,3 +18,7 @@
 ## 2026-05-24 - Enable HTTP Response Compression
 **Learning:** For Spring Boot REST APIs returning potentially large JSON arrays (like a growing list of tasks), network bandwidth and client-side processing can become a bottleneck. Spring Boot provides out-of-the-box support for HTTP response compression.
 **Action:** When a service returns large payloads, enable `server.compression.enabled=true` in `application.properties` with appropriate MIME types and a minimum response size threshold (e.g., 1024 bytes) to optimize network transfer times.
+
+## 2026-05-26 - Enable ETag Support
+**Learning:** ShallowEtagHeaderFilter automatically calculates an MD5 hash of the response body and returns a 304 Not Modified if the client's If-None-Match header matches. This saves bandwidth and client-side processing, particularly for repeated API calls for static or infrequently changed data (e.g. GET /api/tasks).
+**Action:** In Spring Boot applications, enable ETag support globally by adding a ShallowEtagHeaderFilter bean in a configuration class.
