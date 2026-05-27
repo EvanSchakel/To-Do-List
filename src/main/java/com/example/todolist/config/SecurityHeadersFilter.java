@@ -23,6 +23,10 @@ public class SecurityHeadersFilter implements Filter {
             httpResponse.setHeader("X-XSS-Protection", "1; mode=block");
             httpResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
             httpResponse.setHeader("Content-Security-Policy", "default-src 'self'");
+            // Prevent caching of sensitive data
+            httpResponse.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+            httpResponse.setHeader("Pragma", "no-cache");
+            httpResponse.setHeader("Expires", "0");
         }
         chain.doFilter(request, response);
     }

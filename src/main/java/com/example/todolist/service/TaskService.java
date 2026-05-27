@@ -36,6 +36,8 @@ public class TaskService {
     public Task createTask(Task task) {
         // Prevent Mass Assignment/IDOR: ensure a new record is created rather than updating an existing one
         task.setId(null);
+        // Prevent Mass Assignment on audit fields: explicitly set createdAt to now
+        task.setCreatedAt(java.time.LocalDateTime.now());
         return taskRepository.save(task);
     }
 
