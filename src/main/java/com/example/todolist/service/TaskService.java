@@ -3,6 +3,8 @@ package com.example.todolist.service;
 import com.example.todolist.model.Task;
 import com.example.todolist.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,10 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
+    // ⚡ Bolt Performance Optimization:
+    // Caching the result of getAllTasks() to prevent hitting the database on every read.
+    // The cache is evicted automatically whenever a write operation (create, update, delete) occurs.
+    @Cacheable("tasks")
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
@@ -33,6 +39,7 @@ public class TaskService {
     }
 
     @Transactional
+    @CacheEvict(value = "tasks", allEntries = true)
     public Task createTask(Task task) {
         // Prevent Mass Assignment/IDOR: ensure a new record is created rather than updating an existing one
         task.setId(null);
@@ -42,6 +49,7 @@ public class TaskService {
     }
 
     @Transactional
+    @CacheEvict(value = "tasks", allEntries = true)
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
@@ -59,6 +67,7 @@ public class TaskService {
     }
 
     @Transactional
+    @CacheEvict(value = "tasks", allEntries = true)
     public boolean deleteById(Long id) {
         return taskRepository.deleteTaskById(id) > 0;
     }
