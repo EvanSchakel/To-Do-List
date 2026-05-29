@@ -21,3 +21,7 @@
 ## 2026-05-28 - Spring Cache Optimization for Read-Heavy Endpoints
 **Learning:** For frequently accessed REST endpoints returning identical or rarely changing data (like a list of all tasks), querying the database on every request introduces unnecessary latency and database load.
 **Action:** Implemented caching using `@EnableCaching` on the main application class and `@Cacheable` on read-heavy service methods (e.g., `getAllTasks()`). Ensuring correctness by pairing it with `@CacheEvict(allEntries = true)` on mutation methods (create, update, delete) guarantees cache invalidation.
+
+## 2024-05-29 - Combine Specific Cache and List Cache Invalidations
+**Learning:** Adding `@Cacheable(value = "task", key = "#id")` caches individual task lookups, preventing repeated database hits for the same resource. However, invalidating it requires multiple annotations on mutation methods (e.g., `updateTask`, `deleteById`). When methods return `Optional`, adding `unless="!#result.isPresent()"` can cause SpEL evaluation errors because Spring Framework caching operates on the container itself without specific Optional-unwrapping extensions configured by default.
+**Action:** Use `@Caching(evict = { @CacheEvict(value = "tasks", allEntries = true), @CacheEvict(value = "task", key = "#id") })` to invalidate both the list cache and the specific item cache concurrently upon mutation. Simply use `@Cacheable(value = "task", key = "#id")` without complex SpEL on the return type if testing reveals runtime evaluation exceptions.
