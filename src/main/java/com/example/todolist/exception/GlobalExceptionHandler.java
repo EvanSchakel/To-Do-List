@@ -28,6 +28,25 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler({
+            org.springframework.http.converter.HttpMessageNotReadableException.class,
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<Map<String, String>> handleClientErrors(Exception ex) {
+        logger.warn("Client error: {}", ex.getMessage());
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Bad Request");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotFoundError(Exception ex) {
+        logger.warn("Resource not found: {}", ex.getMessage());
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Not Found");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGlobalException(Exception ex) {
         logger.error("An unexpected error occurred", ex);
