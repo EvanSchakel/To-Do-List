@@ -121,4 +121,27 @@ public class TaskControllerTest {
         mockMvc.perform(get("/api/tasks/" + task.getId()))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void testMalformedJson_ReturnsBadRequest() throws Exception {
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"title\": \"Test Task\", \"completed\": \"invalid_boolean\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Malformed JSON request"));
+    }
+
+    @Test
+    void testTypeMismatch_ReturnsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/tasks/not-a-number"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Invalid parameter type"));
+    }
+
+    @Test
+    void testNoResourceFound_ReturnsNotFound() throws Exception {
+        mockMvc.perform(get("/api/invalid-endpoint"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Resource not found"));
+    }
 }
