@@ -17,3 +17,8 @@
 **Vulnerability:** Default database credentials (`sa` and empty password) were hardcoded in `application.properties`. While these are standard for local H2 development, they violate the boundary against committing any form of secrets or credentials. If the application later switched to a production database dialect, developers might inadvertently commit real credentials in this file.
 **Learning:** Spring Boot's property placeholder resolution provides a secure way to externalize credentials while maintaining seamless local development. You can specify environment variables with fallback defaults.
 **Prevention:** Always use environment variable placeholders for credentials in configuration files. Provide safe defaults for non-sensitive data (`${DB_USERNAME:sa}`), but *crucially*, leave password fallbacks completely empty (`${DB_PASSWORD:}`) to ensure no placeholder secret is ever committed.
+
+## 2026-06-04 - Fix Information Disclosure in Error Handling
+**Vulnerability:** Information Disclosure/Log Flooding via generic exception handling.
+**Learning:** By default, unhandled framework exceptions (e.g., `HttpMessageNotReadableException`, `MethodArgumentTypeMismatchException`, `NoResourceFoundException`) representing bad client requests (400/404) would fall through to the generic `Exception.class` handler. This resulted in returning a 500 Internal Server Error and logging the full stack trace at the `ERROR` level. This could lead to DoS via log flooding and potential leakage of internal stack traces.
+**Prevention:** Explicitly handle framework-specific client exceptions in the `@RestControllerAdvice` to log only the message at the `WARN` level and return the appropriate 400 or 404 HTTP status code.
