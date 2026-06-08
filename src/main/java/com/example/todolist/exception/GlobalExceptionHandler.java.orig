@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
             org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class
     })
     public ResponseEntity<Map<String, String>> handleBadRequestExceptions(Exception ex) {
-        logger.warn("Bad request: {}", sanitizeLogMessage(ex.getMessage()));
+        logger.warn("Bad request: {}", ex.getMessage());
         Map<String, String> response = new HashMap<>();
         response.put("error", "Invalid request format or parameters");
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -41,17 +41,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotFoundExceptions(Exception ex) {
-        logger.warn("Resource not found: {}", sanitizeLogMessage(ex.getMessage()));
+        logger.warn("Resource not found: {}", ex.getMessage());
         Map<String, String> response = new HashMap<>();
         response.put("error", "Resource not found");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    }
-
-    private String sanitizeLogMessage(String message) {
-        if (message == null) {
-            return "null";
-        }
-        return message.replaceAll("[\n\r\t]", "_");
     }
 
     @ExceptionHandler(Exception.class)
