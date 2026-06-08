@@ -17,3 +17,8 @@
 **Vulnerability:** Default database credentials (`sa` and empty password) were hardcoded in `application.properties`. While these are standard for local H2 development, they violate the boundary against committing any form of secrets or credentials. If the application later switched to a production database dialect, developers might inadvertently commit real credentials in this file.
 **Learning:** Spring Boot's property placeholder resolution provides a secure way to externalize credentials while maintaining seamless local development. You can specify environment variables with fallback defaults.
 **Prevention:** Always use environment variable placeholders for credentials in configuration files. Provide safe defaults for non-sensitive data (`${DB_USERNAME:sa}`), but *crucially*, leave password fallbacks completely empty (`${DB_PASSWORD:}`) to ensure no placeholder secret is ever committed.
+
+## 2026-06-08 - Prevent CRLF Log Injection in Exception Handler
+**Vulnerability:** Log Injection / CRLF Injection. Exception messages generated from client inputs (like `MethodArgumentTypeMismatchException` from invalid path variables) were passed directly to SLF4J loggers without sanitization. An attacker could inject `\r\n` characters to forge fake log entries.
+**Learning:** Even built-in framework exception messages can contain untrusted user input if they echo back the problematic value (e.g., "Failed to convert... For input string: '...'").
+**Prevention:** Always sanitize exception messages by replacing `\n`, `\r`, and `\t` characters before passing them to logging methods, especially in `@ExceptionHandler` methods handling client input errors.
