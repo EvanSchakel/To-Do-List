@@ -21,3 +21,7 @@
 ## 2026-05-28 - Spring Cache Optimization for Read-Heavy Endpoints
 **Learning:** For frequently accessed REST endpoints returning identical or rarely changing data (like a list of all tasks), querying the database on every request introduces unnecessary latency and database load.
 **Action:** Implemented caching using `@EnableCaching` on the main application class and `@Cacheable` on read-heavy service methods (e.g., `getAllTasks()`). Ensuring correctness by pairing it with `@CacheEvict(allEntries = true)` on mutation methods (create, update, delete) guarantees cache invalidation.
+
+## 2026-06-11 - Negative Caching with Optional
+**Learning:** In Spring Cache SpEL, `#result` for a method returning `Optional` refers to the `Optional` object itself, not the unwrapped content. Therefore, a condition like `unless = "#result == null"` evaluates to `false` for `Optional.empty()`, meaning empty optionals *will* be cached as null cache entries. This is actually a positive "negative caching" behavior that prevents cache penetration (repeated DB hits for missing IDs), but the SpEL behavior can be surprising.
+**Action:** When caching `Optional` returns, rely on this implicit negative caching behavior to protect the database, but be careful not to use unwrapping methods like `isEmpty()` in SpEL unless absolutely certain of the cache provider's behavior.
