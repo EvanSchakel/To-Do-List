@@ -4,6 +4,7 @@ import com.example.todolist.model.Task;
 import com.example.todolist.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,10 @@ public class TaskService {
         return taskRepository.findAll();
     }
 
+    // ⚡ Bolt Performance Optimization:
+    // Added item-level caching for task lookups to prevent unnecessary database SELECTs.
+    // The 'unless = "#result == null"' parameter prevents caching empty optionals.
+    @Cacheable(value = "task", key = "#id", unless = "#result == null")
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
@@ -49,7 +54,12 @@ public class TaskService {
     }
 
     @Transactional
-    @CacheEvict(value = "tasks", allEntries = true)
+    // ⚡ Bolt Performance Optimization:
+    // Evicting both the global "tasks" list cache and the specific "task" item cache to prevent stale reads.
+    @Caching(evict = {
+        @CacheEvict(value = "tasks", allEntries = true),
+        @CacheEvict(value = "task", key = "#id")
+    })
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
@@ -67,7 +77,12 @@ public class TaskService {
     }
 
     @Transactional
-    @CacheEvict(value = "tasks", allEntries = true)
+    // ⚡ Bolt Performance Optimization:
+    // Evicting both the global "tasks" list cache and the specific "task" item cache to prevent stale reads.
+    @Caching(evict = {
+        @CacheEvict(value = "tasks", allEntries = true),
+        @CacheEvict(value = "task", key = "#id")
+    })
     public boolean deleteById(Long id) {
         return taskRepository.deleteTaskById(id) > 0;
     }
