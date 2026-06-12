@@ -28,11 +28,37 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler({
+            org.springframework.http.converter.HttpMessageNotReadableException.class,
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<Map<String, String>> handleClientErrors(Exception ex) {
+        String sanitizedMessage = sanitizeLog(ex.getMessage());
+        logger.warn("Client error: {}", sanitizedMessage);
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Bad Request");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotFound(Exception ex) {
+        String sanitizedMessage = sanitizeLog(ex.getMessage());
+        logger.warn("Resource not found: {}", sanitizedMessage);
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Not Found");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGlobalException(Exception ex) {
         logger.error("An unexpected error occurred", ex);
         Map<String, String> response = new HashMap<>();
         response.put("error", "An unexpected error occurred");
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private String sanitizeLog(String message) {
+        if (message == null) return null;
+        return message.replaceAll("[\r\n\t]", "_");
     }
 }
