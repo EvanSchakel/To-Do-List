@@ -21,3 +21,6 @@
 ## 2026-05-28 - Spring Cache Optimization for Read-Heavy Endpoints
 **Learning:** For frequently accessed REST endpoints returning identical or rarely changing data (like a list of all tasks), querying the database on every request introduces unnecessary latency and database load.
 **Action:** Implemented caching using `@EnableCaching` on the main application class and `@Cacheable` on read-heavy service methods (e.g., `getAllTasks()`). Ensuring correctness by pairing it with `@CacheEvict(allEntries = true)` on mutation methods (create, update, delete) guarantees cache invalidation.
+## 2026-06-12 - Spring Cache Item and Collection Sync Optimization
+**Learning:** When a REST endpoint offers both a list of items and a specific item lookup, querying the DB for individual lookups is an unnecessary bottleneck when item data rarely changes. Adding a cache to the individual item endpoint `getTaskById` improves single query performance, but caching specific items requires proper eviction logic alongside list cache eviction.
+**Action:** Use `@Caching(evict = { @CacheEvict(value = "collection_cache", allEntries = true), @CacheEvict(value = "item_cache", key = "#id") })` on mutation methods (like update, delete) to ensure both global lists and specific item caches remain consistent and avoid stale reads.
