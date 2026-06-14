@@ -5,6 +5,7 @@ import com.example.todolist.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,10 @@ public class TaskService {
         return taskRepository.findAll();
     }
 
+    // ⚡ Bolt Performance Optimization:
+    // Caching individual task lookups using @Cacheable("task") prevents redundant
+    // database queries when the same task is requested multiple times, reducing latency.
+    @Cacheable(value = "task", key = "#id")
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
@@ -49,7 +54,13 @@ public class TaskService {
     }
 
     @Transactional
-    @CacheEvict(value = "tasks", allEntries = true)
+    // ⚡ Bolt Performance Optimization:
+    // Using @Caching to simultaneously clear the global "tasks" list cache and
+    // the specific individual "task" cache to guarantee data consistency after mutation.
+    @Caching(evict = {
+        @CacheEvict(value = "tasks", allEntries = true),
+        @CacheEvict(value = "task", key = "#id")
+    })
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
@@ -67,7 +78,13 @@ public class TaskService {
     }
 
     @Transactional
-    @CacheEvict(value = "tasks", allEntries = true)
+    // ⚡ Bolt Performance Optimization:
+    // Using @Caching to simultaneously clear the global "tasks" list cache and
+    // the specific individual "task" cache to guarantee data consistency after mutation.
+    @Caching(evict = {
+        @CacheEvict(value = "tasks", allEntries = true),
+        @CacheEvict(value = "task", key = "#id")
+    })
     public boolean deleteById(Long id) {
         return taskRepository.deleteTaskById(id) > 0;
     }
