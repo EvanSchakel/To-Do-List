@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +30,38 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+
+    private String sanitizeLog(String message) {
+        if (message == null) {
+            return null;
+        }
+        return message.replaceAll("[\\r\\n\\t]", "_");
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        logger.warn("Malformed JSON request: {}", sanitizeLog(ex.getMessage()));
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Malformed JSON request");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        logger.warn("Type mismatch error: {}", sanitizeLog(ex.getMessage()));
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid parameter type");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNoResourceFound(NoResourceFoundException ex) {
+        logger.warn("Resource not found: {}", sanitizeLog(ex.getMessage()));
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Resource not found");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)
