@@ -5,6 +5,7 @@ import com.example.todolist.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,11 @@ public class TaskService {
         return taskRepository.findAll();
     }
 
+    // ⚡ Bolt Performance Optimization:
+    // Caching individual item lookups. This avoids unnecessary database SELECT queries
+    // when requesting a specific task multiple times, significantly reducing read latency
+    // and overall database connection load for frequently accessed single items.
+    @Cacheable(value = "task", key = "#id")
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
@@ -49,7 +55,13 @@ public class TaskService {
     }
 
     @Transactional
-    @CacheEvict(value = "tasks", allEntries = true)
+    // ⚡ Bolt Performance Optimization:
+    // When updating an item, evict both the global "tasks" list cache and the specific "task"
+    // item cache to ensure strict data consistency across all read endpoints.
+    @Caching(evict = {
+        @CacheEvict(value = "tasks", allEntries = true),
+        @CacheEvict(value = "task", key = "#id")
+    })
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
@@ -67,7 +79,13 @@ public class TaskService {
     }
 
     @Transactional
-    @CacheEvict(value = "tasks", allEntries = true)
+    // ⚡ Bolt Performance Optimization:
+    // When deleting an item, evict both the global "tasks" list cache and the specific "task"
+    // item cache to prevent serving deleted entities from the cache.
+    @Caching(evict = {
+        @CacheEvict(value = "tasks", allEntries = true),
+        @CacheEvict(value = "task", key = "#id")
+    })
     public boolean deleteById(Long id) {
         return taskRepository.deleteTaskById(id) > 0;
     }
