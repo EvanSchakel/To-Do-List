@@ -5,6 +5,7 @@ import com.example.todolist.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,10 @@ public class TaskService {
         return taskRepository.findAll();
     }
 
+    // ⚡ Bolt Performance Optimization:
+    // Caching individual task lookups. This avoids a database trip for frequently
+    // requested items. It works in conjunction with the list cache below.
+    @Cacheable(value = "task", key = "#id")
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
@@ -49,7 +54,14 @@ public class TaskService {
     }
 
     @Transactional
-    @CacheEvict(value = "tasks", allEntries = true)
+    // ⚡ Bolt Performance Optimization:
+    // When updating, we must evict both the general "tasks" list cache (since
+    // its contents are altered) and the specific "task" item cache to ensure
+    // clients don't get stale data on subsequent lookups.
+    @Caching(evict = {
+            @CacheEvict(value = "tasks", allEntries = true),
+            @CacheEvict(value = "task", key = "#id")
+    })
     public Optional<Task> updateTask(Long id, Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
@@ -67,7 +79,12 @@ public class TaskService {
     }
 
     @Transactional
-    @CacheEvict(value = "tasks", allEntries = true)
+    // ⚡ Bolt Performance Optimization:
+    // Similarly, upon deletion, we must evict both the list and item caches.
+    @Caching(evict = {
+            @CacheEvict(value = "tasks", allEntries = true),
+            @CacheEvict(value = "task", key = "#id")
+    })
     public boolean deleteById(Long id) {
         return taskRepository.deleteTaskById(id) > 0;
     }
