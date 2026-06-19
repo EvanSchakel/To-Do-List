@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +29,24 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<Map<String, String>> handleClientErrors(Exception ex) {
+        String safeMsg = ex.getMessage() != null ? ex.getMessage().replaceAll("[\r\n\t]", "_") : "Bad request";
+        logger.warn("Client error: {}", safeMsg);
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Bad Request");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotFound(NoResourceFoundException ex) {
+        String safeMsg = ex.getMessage() != null ? ex.getMessage().replaceAll("[\r\n\t]", "_") : "Not found";
+        logger.warn("Resource not found: {}", safeMsg);
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Not Found");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)
