@@ -17,3 +17,7 @@
 **Vulnerability:** Default database credentials (`sa` and empty password) were hardcoded in `application.properties`. While these are standard for local H2 development, they violate the boundary against committing any form of secrets or credentials. If the application later switched to a production database dialect, developers might inadvertently commit real credentials in this file.
 **Learning:** Spring Boot's property placeholder resolution provides a secure way to externalize credentials while maintaining seamless local development. You can specify environment variables with fallback defaults.
 **Prevention:** Always use environment variable placeholders for credentials in configuration files. Provide safe defaults for non-sensitive data (`${DB_USERNAME:sa}`), but *crucially*, leave password fallbacks completely empty (`${DB_PASSWORD:}`) to ensure no placeholder secret is ever committed.
+## 2026-06-24 - [Disable OpenAPI Docs in Production]
+**Vulnerability:** Springdoc OpenAPI UI and API docs endpoints were available by default, creating an overly broad attack surface in production environments.
+**Learning:** Default dependency configurations often expose diagnostic endpoints designed for development, which can map out the entire backend structure to attackers.
+**Prevention:** Ensure API documentation generation relies on profiles, explicitly setting `springdoc.api-docs.enabled=false` and `springdoc.swagger-ui.enabled=false` within the application-prod properties.
