@@ -11,6 +11,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,8 +31,35 @@ public class GlobalExceptionHandler {
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        String msg = ex.getMessage() != null ? ex.getMessage().replaceAll("[\r\n\t]", "_") : "Malformed request body";
+        logger.warn("Bad Request - Message not readable: {}", msg);
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Malformed request body");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        String msg = ex.getMessage() != null ? ex.getMessage().replaceAll("[\r\n\t]", "_") : "Type mismatch";
+        logger.warn("Bad Request - Type mismatch: {}", msg);
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid parameter type");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNoResourceFoundException(NoResourceFoundException ex) {
+        String msg = ex.getMessage() != null ? ex.getMessage().replaceAll("[\r\n\t]", "_") : "Resource not found";
+        logger.warn("Not Found - Resource missing: {}", msg);
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Resource not found");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler(Exception.class)
+
     public ResponseEntity<Map<String, String>> handleGlobalException(Exception ex) {
         logger.error("An unexpected error occurred", ex);
         Map<String, String> response = new HashMap<>();
