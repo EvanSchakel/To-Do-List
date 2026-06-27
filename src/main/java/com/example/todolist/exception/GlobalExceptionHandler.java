@@ -27,6 +27,26 @@ public class GlobalExceptionHandler {
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler({
+        org.springframework.http.converter.HttpMessageNotReadableException.class,
+        org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<Map<String, String>> handleBadRequestExceptions(Exception ex) {
+        String safeMessage = ex.getMessage() != null ? ex.getMessage().replaceAll("[\\r\\n\\t]", "_") : "Invalid request";
+        logger.warn("Bad request: {}", safeMessage);
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Bad Request");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotFoundExceptions(Exception ex) {
+        String safeMessage = ex.getMessage() != null ? ex.getMessage().replaceAll("[\\r\\n\\t]", "_") : "Resource not found";
+        logger.warn("Not found: {}", safeMessage);
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Not Found");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGlobalException(Exception ex) {
