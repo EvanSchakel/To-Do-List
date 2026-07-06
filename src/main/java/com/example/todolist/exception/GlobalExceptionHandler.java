@@ -2,10 +2,13 @@ package com.example.todolist.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +29,29 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+
+    // Sanitize input to prevent log injection (CRLF)
+    private String sanitize(String input) {
+        if (input == null) return null;
+        return input.replaceAll("[\r\n\t]", "_");
+    }
+
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<Map<String, String>> handleClientErrors(Exception ex) {
+        logger.warn("Client error: {}", sanitize(ex.getMessage()));
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Invalid request format or arguments");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotFoundErrors(Exception ex) {
+        logger.warn("Resource not found: {}", sanitize(ex.getMessage()));
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "Resource not found");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)
