@@ -21,3 +21,7 @@
 ## 2026-05-28 - Spring Cache Optimization for Read-Heavy Endpoints
 **Learning:** For frequently accessed REST endpoints returning identical or rarely changing data (like a list of all tasks), querying the database on every request introduces unnecessary latency and database load.
 **Action:** Implemented caching using `@EnableCaching` on the main application class and `@Cacheable` on read-heavy service methods (e.g., `getAllTasks()`). Ensuring correctness by pairing it with `@CacheEvict(allEntries = true)` on mutation methods (create, update, delete) guarantees cache invalidation.
+
+## 2026-07-05 - Avoid SpEL expressions on Optional returns for caching
+**Learning:** Spring 4.3+ natively supports caching methods that return `Optional<T>`; it automatically unwraps the `Optional` to cache the underlying value. Using SpEL expressions like `unless = "#result.isEmpty()"` or `!#result.isPresent()` on the `@Cacheable` annotation causes `SpelEvaluationException` errors because the result is already unwrapped.
+**Action:** When caching methods returning `Optional<T>`, omit the `unless` clause, or simply use `#result == null` if necessary.
